@@ -8,8 +8,6 @@ from generalutil.generalUtil import GeneralUtil
 import logging
 import logging.config
 
-# Step: cd to app-directory, and run>> streamlit run app.py --server.port=8501 --server.maxUploadSize 5
-# TIP: press win+; or win+. to insert emojis in windows
 
 # Setup logging
 logging.config.fileConfig('logger-config.conf')
