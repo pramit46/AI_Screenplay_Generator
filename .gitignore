@@ -1,0 +1,6 @@
+temp/
+logs/
+__pycache__
+.env
+pending-tasks.txt
+lion.pdf
