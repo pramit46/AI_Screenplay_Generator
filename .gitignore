@@ -4,3 +4,4 @@ __pycache__
 .env
 pending-tasks.txt
 lion.pdf
+requirements_1.txt
