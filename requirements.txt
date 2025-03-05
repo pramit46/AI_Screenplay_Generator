@@ -12,8 +12,8 @@ crewai-tools==0.36.0
 openai==1.64.0
 tempfile2==0.1.2
 cohere==5.13.12
-#python-magic==0.4.27
-#python-magic-bin==0.4.14
+python-magic==0.4.27
+python-magic-bin==0.4.14
 	# via transformers
 pyyaml==6.0.1
 	# via transformers

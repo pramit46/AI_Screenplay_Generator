@@ -25,9 +25,8 @@ class FileHelper():
 
     # Identify the file type
     def getFileType(self, path_to_file : str) -> str:              
-        if(path_to_file is not None or path_to_file != ""):                    
-          #filetype=magic.from_file(path_to_file)  #@Pramit: If magic is not needed, then remove the pkg and import
-          filetype=path_to_file.type
+        if(path_to_file is not None or path_to_file != ""):                              
+          filetype=magic.from_file(path_to_file)          
           self.logger.info(filetype)
           if("PDF" in filetype or "pdf" in filetype):
               self.logger.info(f"the uploaded file type is pdf")
@@ -51,7 +50,6 @@ class FileHelper():
         fileType=self.getFileType(file_path)
         # Read operation if the file is a PDF file       
         if(fileType=="pdf"):
-            print(f"yy {type(file_path)}")
             if(type(file_path) == str):
                 try:
                     self.logger.info(f"reading the stored PDF file")
@@ -65,6 +63,7 @@ class FileHelper():
             
             # This is needed for the first time when the file is 
             # being read for validation without being stored, yet
+            # MAY NOT BE NEEDED, ANYMORE since we are reading from stored location now.
             elif(type(file_path)==st.runtime.uploaded_file_manager.UploadedFile): 
                 try:
                     self.logger.info(f"reading the uploaded PDF file")
@@ -110,21 +109,23 @@ class FileHelper():
         # neither to be stored, either
         if(prompt != None and len(prompt)>0):
             # Remove unnecessary leading and trailing whitespaces in order to avoid any confusions
-            prompt=prompt.strip()
+            content=prompt.strip()
             #CheatCode to bypass validation :)
-            if(prompt.startswith("^$")):
+            if(content.startswith("^$")):
                 self.logger.warning(f"#GODMODE: Bypassing validation.")
-                prompt=prompt.removeprefix("^$")
+                content=content.removeprefix("^$")
                 validFlag=True
             else:
                 count=0
-                for i in prompt.split(" "):                
+                for i in content.split(" "):                
                     count+=1
                 self.logger.info(f"the content's word count is: {count}")
                 if(count>=int(self.gu.parseConfigFile("CONTENT", "CONTENT_MIN_WORDS")) and count<=int(self.gu.parseConfigFile("CONTENT", "CONTENT_MAX_WORDS"))):
                     validFlag=True
+                    st.markdown(f"The input prompt passed the validation criteria")
                 else:
                     self.logger.warning(f"the user provided content fails validation")                
+                    st.markdown(f"The input prompt does not meet the criteria")
         elif(uploaded_file is not None or uploaded_file != ""):          
             count=0
             content=self.readUploadedFile(uploaded_file)
@@ -135,12 +136,16 @@ class FileHelper():
                 count+=1
             self.logger.info(f"the content's word count is: {count}")
             if(count>=int(self.gu.parseConfigFile("CONTENT", "CONTENT_MIN_WORDS")) and count<=int(self.gu.parseConfigFile("CONTENT", "CONTENT_MAX_WORDS"))):
-                validFlag=True                        
+                validFlag=True         
+                st.markdown(f"The uploaded file passed the validation criteria")               
             else:
                 self.logger.warning(f"the user provided content fails validation")
+                # Remove the file from the temp location for compliance
+                os.remove(uploaded_file)
+                st.markdown(f"The provided content does not meet the criteria")
         else:
             self.logger.warning(f"no input provided or user provided content fails validation")
-        self.logger.info(f"the input prompt: {prompt} \n has valid flag: {validFlag}")
+        self.logger.info(f"the input prompt: {content}\nhas valid flag value: {validFlag}")
         return validFlag
     
 
@@ -163,22 +168,22 @@ class FileHelper():
 
     # Store the uploaded file to a temporary location
     def storeUplaodedFileInTempLocation(self, uploaded_file : str) -> str:
-        # Store the content in a temp file for backup and reading.
-        validity=self.validateContent(uploaded_file=uploaded_file)
         # Initialize file_path variable
         file_path=""
-        if not validity:
-            st.markdown(f"The provided content does not meet the criteria")
-        else:
-            try:            
-                temp_dir=self.parseConfigFile("FILE", "TEMP_FILE_STORAGE_PATH")            
-                file_path = os.path.join(temp_dir, uploaded_file.name)
-                self.logger.info(f"the file has been temporarily stored at the path: {self.file_path}")
-                with open(file_path, "wb") as f:
-                    f.write(uploaded_file.getvalue())                                                            
-            except Exception as e:
-                self.logger.error(f"An error occurred: {e}") 
-                
+        # First store the file to temp location. We have to store the file first 
+        # in order to read and validate it. Otherwise the uploaded file object 
+        # will remain as byte object which will hinder the reading hence validation. 
+        # Instead ease the life by storing the content in temp file and read from there. 
+        # If validation FAILS, then we may have to delete the file from 
+        # the temp location for compliance purpose
+        try:            
+            temp_dir=self.gu.parseConfigFile("FILE", "TEMP_FILE_STORAGE_PATH")                        
+            file_path = os.path.join(temp_dir, uploaded_file.name)            
+            with open(file_path, "wb") as f:
+                f.write(uploaded_file.getvalue())                                                            
+            self.logger.info(f"the file has been temporarily stored at the path: {file_path}")
+        except Exception as e:
+            self.logger.error(f"an error occurred: {e}")         
         # Set the global file path variable in order to access it from other methods    
         return file_path    
 

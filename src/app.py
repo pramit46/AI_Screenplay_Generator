@@ -35,7 +35,7 @@ fh=FileHelper()
 gs=GenerateStory()
 gu=GeneralUtil()
 
-# Create the adidtional directories like temp, logs etc in order to initialize the application.
+# Create the additional directories like temp, logs etc in order to initialize the application.
 gu.createDirectories()
 
 # Streamlit page config
@@ -87,7 +87,7 @@ with st.sidebar:
     if uploaded_file is not None:
         st.session_state.uploaded_file=uploaded_file.name         
         #st.write("filename:", uploaded_file.name) # It's optional to show the filename and other details since we are already showing the uploaded filename once
-        file_path=fh.storeUplaodedFileInTempLocation(uploaded_file)          
+        file_path=fh.storeUplaodedFileInTempLocation(uploaded_file=uploaded_file)          
         #file_path=x(uploaded_file)
         
     
@@ -114,17 +114,17 @@ with st.sidebar:
         st.markdown("""
         1. Enter your story in the text area above
         2. Alternatively, upload story file (Optional).
-        3. Adjust the temperature if needed (higher = more creative, lower = more realistic)
-        4. Click 'Generate Screenplay' to start
-        5. Wait for the AI to generate your scenes
-        6. Download the result as a markdown file
+        3. Note that written prompt will take precedence over uploaded file.
+        4. Adjust the temperature if needed (higher = more creative, lower = more realistic)
+        5. Click 'Generate Screenplay' to start
+        6. Wait for the AI to generate your scenes
+        7. Download the result as a markdown file
         """)
 
 
 # Main content Display area
-if generate_button and (story_prompt or uploaded_file):
+if generate_button and (story_prompt or file_path):
     if("consent" not in st.session_state or st.session_state.consent!=True):
-        f"The consent is needed before generating the output."
         try: 
             gu.showConsent()
         except Exception as e:
@@ -132,18 +132,27 @@ if generate_button and (story_prompt or uploaded_file):
         st.stop()
     else:
         with st.spinner('Generating Screenplay... This may take a moment.'):
-            validity=fh.validateContent(prompt=story_prompt)
+            # Initialize the validity flag
+            validity=False            
+            if(story_prompt is not None and len(story_prompt)>0):
+                validity=fh.validateContent(prompt=story_prompt)
+            else:
+                validity=fh.validateContent(uploaded_file=file_path)
             if validity:
-                try:
+                try:                    
                     summaryOfUploadedFile=""
-                    result=""                                    
-                    if(story_prompt is None):
-                        if(uploaded_file is not None): 
-                            summaryOfUploadedFile = gs.summarizeUploadedFile(uploaded_file)
+                    result=""     
+                    # only consider uploaded file if the story_prompt is empty. This way manual prompt takes precedence over uploaded file.
+                    if(story_prompt is None or len(story_prompt)<=0):
+                        if(uploaded_file is not None):                             
+                            summaryOfUploadedFile = gs.summarizeUploadedFile(file_path=uploaded_file)
+                            # add the summary to story_prompt in order to have only one variable for either of the outputs
                             story_prompt = summaryOfUploadedFile                    
-                    #logger.info(f"Story Prompt: {story_prompt}") # Moved this to validation section due to G##MODE
-                    if(story_prompt is not None):                        
+                            #logger.info(f"Story Prompt: {story_prompt}") # Moved this to validation section due to G##MODE character exposure. Strictly enable for testing
+                    if(story_prompt is not None and len(story_prompt)>0):                                              
                         result = gs.generate_story(story_prompt=story_prompt, temperature=temperature)                        
+                    else: 
+                        logger.error(f"some problems occurred. Either story prompt is not not None or uploaded file is None")
                     st.markdown("### Generated Screenplays")
                     st.markdown(result)
                     logger.info(f"story has been generated and displayed")

@@ -59,7 +59,7 @@ class GeneralUtil():
                 st.session_state.consent = True
                 self.logger.info(f"selected st.session_state.consent value is: {st.session_state.consent}")
                 st.html('''<font color="green"><b>Provided Consent</b></font>''')
-                #st.rerun()
+                st.rerun()
             else:
                 st.session_state.consent = False
                 self.logger.info(f"selected st.session_state.consent value is: {st.session_state.consent}")                                    
@@ -94,12 +94,12 @@ class GeneralUtil():
         '''
         )        
         st.html("""<h2 id="dialogue-header">Please Follow The Below Validation Rules:</h2>
-                1. The prompt word count should be >=10 and <=100<br/>
-                2. No nudity<br/>
+                1. The Input Word Count Should Be >=10  &  <=100<br/>
+                2. No Nudity or Sexual Content<br/>
                 3. No Violence<br/>
-                4. No curse words<br/>
-                5. No image 
-                6. No Personal Identifiable Information""")
+                4. No Curse Words<br/>
+                5. No Image<br/>
+                6. No Personally Identifiable Information (PII)<br/>""")
 
     
     # Create helper directories
@@ -111,3 +111,5 @@ class GeneralUtil():
                 self.logger.info(f"created path {i}")
             else:
                 self.logger.info(f"the path {i} already exists")
+
+                
