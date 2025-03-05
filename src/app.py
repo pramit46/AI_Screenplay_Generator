@@ -62,7 +62,7 @@ with st.sidebar:
     # Make the text input take up more space # @Pramit SHOULD ONLY WORK IF FILE UPLOAD IS NOT DONE
     story_prompt = st.text_area(
         "What's your Story? (Type/Paste your story)",
-        height=150,
+        height=int(gu.parseConfigFile("STREAMLIT", "TEXT_AREA_HEIGHT")),
         placeholder="Enter the Story that you want to generate the screenplays for..."
     )
     # Add the prompt to session_state for future reference. Not needed immediately
@@ -94,7 +94,7 @@ with st.sidebar:
     # Add more sidebar controls if needed. Add/remove as per the need
     st.markdown("### Advanced Settings")
     temperature = st.slider("Temperature", 0.0, 1.0, 0.2)
-    st.session_state.temperature=temperature
+    #st.session_state.temperature=temperature
     #max_tokens = st.slider("Max Tokens", 500, 5000, 3000)
     #st.session_state.max_tokens=max_tokens
     #top_p=st.slider("Top P", 0,10,5)

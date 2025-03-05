@@ -103,13 +103,16 @@ class GeneralUtil():
 
     
     # Create helper directories
-    def createDirectories(self):
-        directoryList=["temp","logs"]        
-        for i in directoryList:
+    def createDirectories(self):        
+        directoryList=self.parseConfigFile("AUX-DIR", "DIRECTORIES")
+        print(directoryList)
+        for i in directoryList.split(","):
             if not os.path.exists(i):
                 os.makedirs(i)
                 self.logger.info(f"created path {i}")
             else:
                 self.logger.info(f"the path {i} already exists")
 
-                
+if __name__=='__main__':
+    gu=GeneralUtil()
+    gu.createDirectories()
