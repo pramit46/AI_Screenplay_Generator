@@ -147,8 +147,7 @@ if generate_button and (story_prompt or file_path):
                         if(uploaded_file is not None):                             
                             summaryOfUploadedFile = gs.summarizeUploadedFile(file_path=uploaded_file)
                             # add the summary to story_prompt in order to have only one variable for either of the outputs
-                            story_prompt = summaryOfUploadedFile                    
-                            #logger.info(f"Story Prompt: {story_prompt}") # Moved this to validation section due to G##MODE character exposure. Strictly enable for testing
+                            story_prompt = summaryOfUploadedFile        
                     if(story_prompt is not None and len(story_prompt)>0):                                              
                         result = gs.generate_story(story_prompt=story_prompt, temperature=temperature)                        
                     else: 
